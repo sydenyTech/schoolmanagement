@@ -5,8 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 
 // ✅ Convert to async function directly
 const ParentPage = async () => {
-  const authData = auth();
-  const { userId } = authData.getAuth();
+  const { userId } = auth(); // No need for .getAuth(), auth() directly provides the data
 
   if (!userId) {
     // Handle unauthenticated users or redirect to login page
