@@ -2,21 +2,24 @@ import Announcements from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GetServerSideProps } from "next";
 
-// ✅ Define types for TypeScript support
-interface Student {
-  id: string;
-  name: string;
-  surname: string;
-  classId: string;
-}
+// ✅ Convert to async function directly
+const ParentPage = async () => {
+  const authData = auth();
+  const { userId } = authData.getAuth();
 
-interface ParentPageProps {
-  students: Student[];
-}
+  if (!userId) {
+    // Handle unauthenticated users or redirect to login page
+    return <div>Please log in</div>;
+  }
 
-const ParentPage: React.FC<ParentPageProps> = ({ students }) => {
+  // ✅ Fetch data directly in the component (Server-side fetching)
+  const students = await prisma.student.findMany({
+    where: {
+      parentId: userId,
+    },
+  });
+
   return (
     <div className="flex-1 p-4 flex gap-4 flex-col xl:flex-row">
       {/* LEFT */}
@@ -43,39 +46,6 @@ const ParentPage: React.FC<ParentPageProps> = ({ students }) => {
       </div>
     </div>
   );
-};
-
-// ✅ Fetch data on the server using getServerSideProps
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  // ✅ Use `context.req` for proper authentication
-  const authData = auth();
-  const { userId } = authData.getAuth(context.req);
-
-  if (!userId) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  try {
-    const students = await prisma.student.findMany({
-      where: {
-        parentId: userId,
-      },
-    });
-
-    return {
-      props: { students },
-    };
-  } catch (error) {
-    console.error("Error fetching students:", error);
-    return {
-      props: { students: [] }, // ✅ Prevent crashing if Prisma fails
-    };
-  }
 };
 
 export default ParentPage;
