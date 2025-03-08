@@ -1,7 +1,7 @@
 "scripts": {
   "predeploy": "npm update prisma @prisma/client && npx prisma generate",
   "deploy": "netlify deploy --prod"
-}
+},
 
 {
   "name": "lama-dev-next-dashboard",
